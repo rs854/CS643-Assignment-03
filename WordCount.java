@@ -2,14 +2,11 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.*;
+import org.apache.hadoop.mapreduce.lib.input.*;
+import org.apache.hadoop.mapreduce.lib.output.*;
 
 public class WordCount {
 
@@ -18,16 +15,19 @@ public class WordCount {
 
     private final static IntWritable one = new IntWritable(1);
     private Text word = new Text();
+    private Text state = new Text();
 
     public void map(Object key, Text value, Context context
                     ) throws IOException, InterruptedException {
+      String fileName = ((FileSplit) context.getInputSplit()).getPath().getName();
+      state.set(fileName);
       StringTokenizer itr = new StringTokenizer(value.toString());
       while (itr.hasMoreTokens()) {
         word.set(itr.nextToken().toLowerCase().trim());
 	String wordStr = word.toString();
 	if (wordStr.equals("education") || wordStr.equals("politics") || wordStr.equals("sports") || wordStr.equals("agriculture"))
 	{
-	  context.write(word, one);
+	  context.write(state, one);
 	}
       }
     }
